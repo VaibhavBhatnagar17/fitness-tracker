@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12100f">
+<title>Mahak & Vaibhav — 2 Feb 2027</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="title">Wedding Prep</div>
+    <div class="countdown"><b id="days">—</b><span id="dayslabel">days to 2 February</span></div>
+    <div class="blockbar" id="blockbar"></div>
+    <div class="blockmeta">
+      <span id="weeklabel">—</span>
+      <span id="blocklabel">—</span>
+    </div>
+  </header>
+
+  <div class="who" id="who">
+    <button data-who="mahak">Mahak</button>
+    <button data-who="vaibhav">Vaibhav</button>
+  </div>
+
+  <!-- TODAY -->
+  <section class="view" data-view="today">
+    <div id="alerts"></div>
+    <div class="card">
+      <h2 id="sessionTitle">—</h2>
+      <p class="sub" id="sessionDate">—</p>
+      <div id="exercises"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="completeBtn">Mark session complete</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost" id="mvsBtn">Bad day? Do the 20-minute version</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>This week</h2>
+      <p class="sub">Never miss twice in the same week.</p>
+      <div class="week" id="weekdots"></div>
+      <div class="stats" style="margin-top:14px">
+        <div class="stat"><b id="statStreak">0</b><span>Streak</span></div>
+        <div class="stat"><b id="statWeek">0/0</b><span>This week</span></div>
+        <div class="stat"><b id="statTotal">0</b><span>Total done</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BODY -->
+  <section class="view" data-view="body">
+    <div class="card">
+      <h2>Log today's numbers</h2>
+      <p class="sub">Morning, after the bathroom, before food. Tape every two weeks.</p>
+      <label class="f"><span>Weight (kg)</span><input class="f" type="number" step="0.1" id="mWeight" inputmode="decimal"></label>
+      <div class="grid2" id="tapeInputs"></div>
+      <button class="btn primary full" style="margin-top:12px" id="saveMetrics">Save</button>
+    </div>
+    <div class="card">
+      <h2>Weight</h2>
+      <p class="sub" id="weightSub">—</p>
+      <div id="weightChart"></div>
+    </div>
+    <div class="card">
+      <h2>Waist &amp; hips</h2>
+      <p class="sub">The real scoreboard. The scale can sit still while these move.</p>
+      <div id="tapeChart"></div>
+    </div>
+    <div class="card">
+      <h2>History</h2>
+      <div id="metricHistory"></div>
+    </div>
+  </section>
+
+  <!-- CHECK-IN -->
+  <section class="view" data-view="checkin">
+    <div class="card">
+      <h2>Weekly check-in</h2>
+      <p class="sub" id="checkinWeek">—</p>
+      <h3>Sessions</h3>
+      <p class="sub" id="checkinSessions">—</p>
+      <label class="f"><span>Average lights-out this week</span><input class="f" type="time" id="cBedtime"></label>
+      <label class="f"><span>Average sleep (hours)</span><input class="f" type="number" step="0.5" id="cSleep" inputmode="decimal"></label>
+      <label class="f"><span>How did the week feel? One sentence.</span><textarea class="f" id="cNote"></textarea></label>
+      <button class="btn primary full" id="saveCheckin">Save check-in</button>
+    </div>
+    <div class="card">
+      <h2>Bedtime target</h2>
+      <p class="sub">Lights out 11:30 pm by week 5. Twenty minutes earlier each week — abrupt changes don't stick.</p>
+      <div id="bedChart"></div>
+    </div>
+    <div class="card">
+      <h2>Past check-ins</h2>
+      <div id="checkinHistory"></div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="view" data-view="plan">
+    <div class="card">
+      <h2>The four blocks</h2>
+      <div id="blockList"></div>
+    </div>
+    <div class="card">
+      <h2>Milestones</h2>
+      <div id="milestoneList"></div>
+    </div>
+    <div class="card">
+      <h2>Data</h2>
+      <p class="sub">Everything is stored on this device. Export to move it to another phone, or to back it up.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="exportBtn">Export</button>
+        <button class="btn" id="importBtn">Import</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </section>
+</div>
+
+<nav id="nav">
+  <button data-nav="today"><b>◆</b>Today</button>
+  <button data-nav="body"><b>◇</b>Body</button>
+  <button data-nav="checkin"><b>◈</b>Check-in</button>
+  <button data-nav="plan"><b>◉</b>Plan</button>
+</nav>
+
+<script src="program.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
