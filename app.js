@@ -29,7 +29,11 @@ function load() {
   } catch (e) { /* fall through to a fresh store */ }
   return { profiles: { mahak: blank(), vaibhav: blank() } };
 }
-const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+/* Wrapped: browsers block localStorage when a page is opened directly as a file:// URL */
+const save = () => {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { console.warn('Could not save — serve this over http rather than opening the file directly.'); }
+};
 const me = () => state.profiles[who];
 
 /* ---------- program lookups ---------- */
@@ -114,7 +118,7 @@ function renderToday() {
     alerts.push(`<div class="safety"><b>Never swim alone.</b> Vaibhav in the water or watching from the poolside — not in the gym, not on his phone. If he can't be there, do a land session instead.</div>`);
   }
   if (who === 'mahak' && shown.kind !== 'rest') {
-    alerts.push(`<div class="safety">Eat before you train. Lamitor at its usual time regardless of the schedule.</div>`);
+    alerts.push(`<div class="safety">Eat before you train — never fasted. Medication at its usual time, regardless of what the schedule says.</div>`);
   }
   if (MILESTONES[w]) {
     alerts.push(`<div class="milestone"><b>Week ${w}</b>${MILESTONES[w]}</div>`);

@@ -207,8 +207,8 @@ function swimFor(week) {
 
 /* Milestones keyed by week number */
 const MILESTONES = {
-  1: 'Book both doctors. Take tape measurements and photos. Stop the D3 loading dose.',
-  4: 'October blood panel — before Udaipur. Add-on list is in 02-bloodwork-review.md.',
+  1: 'Book both doctors. Take tape measurements and photos. Review supplement doses.',
+  4: 'October blood panel — before Udaipur. Add-on list is in your notes.',
   5: 'Mahak: 25 m unbroken. Vaibhav: back to ~85% of previous lifts.',
   6: 'Udaipur. The bar drops to three 30-minute sessions a week. Clear it.',
   10: 'Back from Diwali. Re-measure. The win was not losing ground.',
