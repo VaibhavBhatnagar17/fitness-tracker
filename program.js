@@ -6,8 +6,8 @@ const WEDDING_DATE = '2027-02-02';
 const FITTING_WEEK = 15;
 
 const PROFILES = {
-  mahak: { name: 'Mahak', colour: '#e8896b' },
-  vaibhav: { name: 'Vaibhav', colour: '#6b9ae8' },
+  mahak: { name: 'Mahak', accent: '#FF7E6B', accent2: '#FFB86B' },
+  vaibhav: { name: 'Vaibhav', accent: '#5CC8FF', accent2: '#8B7CFF' },
 };
 
 const BLOCKS = [
@@ -32,122 +32,173 @@ const TAPE_SITES = [
   { key: 'thigh', label: 'Thigh' },
 ];
 
-/* ---- Session library ---------------------------------------------------- */
+/* ---- Warm-up / cool-down ------------------------------------------------ */
 
-const ex = (name, scheme, note) => ({ name, scheme, note: note || '' });
+const WARMUP = {
+  strength: [
+    '3 min easy cardio — bike, rower, or brisk walk',
+    'Leg swings front-to-back and side-to-side · 10 each',
+    'Hip circles and deep bodyweight squats · 10',
+    'Band pull-aparts and arm circles · 15',
+    'Then 2 ramp-up sets of the first lift: ~50% and ~75% of the working weight',
+  ],
+  swim: [
+    '5 min easy kicking with the board',
+    'Shoulder circles and band pull-aparts on the deck · 15',
+  ],
+};
+
+const COOLDOWN = [
+  '3 min easy walk until your breathing settles',
+  'Stretch what you trained — 30 s each side',
+  'Legs: hip flexors, hamstrings, glutes · Upper: chest doorway, lats, triceps',
+];
+
+/* ---- Session library ---------------------------------------------------- */
+/* flag: 'new' marks something that was not in your existing routine */
+
+const ex = (name, scheme, note, flag) => ({ name, scheme, note: note || '', flag: flag || '' });
 
 const SESSIONS = {
-  /* --- Mahak, gym (blocks 1 & 3) --- */
-  M_A: { title: 'Full Body A', kind: 'strength', items: [
-    ex('Goblet squat', '3 × 8–10', 'Chest tall, sit between the knees'),
-    ex('Dumbbell Romanian deadlift', '3 × 10', 'Hips back, soft knees. Stop at the hamstring stretch'),
+
+  /* ===== MAHAK — three full-body days, glute-biased ===== */
+
+  M_A: { title: 'Full Body A', focus: 'Glutes & push', kind: 'strength', items: [
+    ex('Hip thrust', '4 × 10', 'Shoulders on a bench, chin tucked, one-second squeeze at the top. The single best exercise for the shape you asked for', 'new'),
+    ex('Barbell or goblet squat', '3 × 8', 'Conventional stance. Chest tall, sit between the knees'),
     ex('Incline dumbbell press', '3 × 10', 'Bench at about 30°'),
-    ex('Seated cable row', '3 × 12', 'Pull to the belly button'),
-    ex('Glute bridge / hip thrust', '3 × 12', 'One-second pause at the top'),
-    ex('Plank', '3 × 30–45 s', 'Ribs down, glutes tight'),
-  ]},
-  M_B: { title: 'Full Body B', kind: 'strength', items: [
-    ex('Hip thrust', '3 × 10', 'Your highest-return lift. Chin tucked'),
-    ex('Bulgarian split squat', '3 × 8 / leg', 'Hold the bench for balance at first'),
-    ex('Lat pulldown', '3 × 10', 'Builds toward your first pull-up'),
-    ex('Dumbbell shoulder press', '3 × 10', 'Seated, back supported'),
-    ex('Cable or band glute kickback', '3 × 15 / side', ''),
-    ex('Dead bug', '3 × 10 / side', 'Lower back flat throughout'),
-  ]},
-  M_C: { title: 'Full Body C', kind: 'strength', items: [
-    ex('Trap-bar or dumbbell deadlift', '3 × 8', 'Same hinge as the RDL, from the floor'),
-    ex('Leg press', '3 × 12', 'Feet high on the platform for glutes'),
-    ex('Push-up progression', '3 × max', 'Hands on a bench → lower surface → knees → full'),
-    ex('Band-assisted pull-up', '3 × 5', 'Or lat pulldown'),
-    ex('Cable lateral raise', '2 × 15', 'Shoulder width makes the waist look smaller'),
-    ex('Side plank', '3 × 20–30 s / side', ''),
+    ex('Cable rowing', '3 × 12', 'Pull to the belly button, squeeze the shoulder blades'),
+    ex('Lateral raises', '3 × 15', 'Light and slow. Shoulder width is what makes a waist look smaller', 'new'),
+    ex('Reverse crunches', '3 × 15', ''),
   ]},
 
-  /* --- Vaibhav, gym (blocks 1 & 3) --- */
-  V_LA: { title: 'Lower A — strength', kind: 'strength', items: [
-    ex('Back squat', '4 × 5', 'Safety pins set. RPE 7'),
+  M_B: { title: 'Full Body B', focus: 'Hinge & pull', kind: 'strength', items: [
+    ex('Romanian deadlift', '4 × 10', 'The movement missing from your routine. Hips back, soft knees, weights slide down the thighs. Stop at the hamstring stretch', 'new'),
+    ex('Bulgarian split squat', '3 × 8 / leg', 'Rear foot on a bench. Hold the bench for balance at first. Brutal, and the best single-leg glute builder there is', 'new'),
+    ex('Cable pull-downs', '3 × 10', 'Builds toward your first pull-up'),
+    ex('Flat dumbbell press', '3 × 10', ''),
+    ex('Banded lateral walk', '3 × 15 steps each way', 'Glute medius — this is what creates the shelf and the hip-to-waist ratio', 'new'),
+    ex('Bicycle twist', '3 × 20 / side', ''),
+  ]},
+
+  M_C: { title: 'Full Body C', focus: 'Legs & arms', kind: 'strength', items: [
+    ex('Sumo squat', '3 × 10', 'Wide stance, toes out. Inner thigh and glute'),
+    ex('Leg press', '3 × 12', 'Feet high on the platform to bias glutes over quads'),
+    ex('Leg curl', '3 × 12', 'Hamstrings from the knee — your routine only trains them from the hip', 'new'),
+    ex('Cable rowing', '3 × 12', ''),
+    ex('Dumbbell curls', '3 × 12', ''),
+    ex('Cable tricep push-down', '3 × 12', ''),
+    ex('Bridge pulse + leg scissors', '3 × 20 each', 'Your existing finisher. Keep it'),
+  ]},
+
+  M_D: { title: 'Full Body D', focus: 'Glute repeat', kind: 'strength', items: [
+    ex('Hip thrust', '4 × 12', 'Second dose of the week. Priority movement'),
+    ex('Romanian deadlift', '3 × 10', ''),
+    ex('Lunges', '3 × 10 / leg', 'Walking or reverse'),
+    ex('Cable pull-downs', '3 × 12', ''),
+    ex('Lateral raises', '3 × 15', ''),
+    ex('Plank + reverse crunches', '3 rounds', ''),
+  ]},
+
+  /* ===== VAIBHAV — four-day upper/lower ===== */
+
+  V_LA: { title: 'Lower A', focus: 'Squat strength', kind: 'strength', items: [
+    ex('Barbell squat', '4 × 5', 'Safety pins set. RPE 7 — three reps left in the tank'),
     ex('Romanian deadlift', '3 × 8', ''),
     ex('Leg press', '3 × 12', ''),
-    ex('Standing calf raise', '4 × 15', ''),
-    ex('Hanging leg raise', '3 × 12', 'Waist work that does not thicken the waist'),
-  ]},
-  V_UA: { title: 'Upper A — strength', kind: 'strength', items: [
-    ex('Bench press', '4 × 6', 'Spotter or safety bars'),
-    ex('Pull-up', '4 × 6', 'Add weight past 8 clean reps'),
-    ex('Overhead press', '3 × 8', ''),
-    ex('Barbell row', '3 × 8', 'Torso around 45°. Your best width builder'),
-    ex('Barbell curl + rope triceps', '3 × 12 each', ''),
-  ]},
-  V_LB: { title: 'Lower B — volume', kind: 'strength', items: [
-    ex('Deadlift', '3 × 5', 'Start around 80–90 kg, not 140'),
-    ex('Bulgarian split squat', '3 × 10 / leg', ''),
-    ex('Leg curl', '3 × 12', ''),
-    ex('Hip thrust', '3 × 12', ''),
-    ex('Cable crunch', '3 × 15', ''),
-  ]},
-  V_UB: { title: 'Upper B — arms & back width', kind: 'strength', items: [
-    ex('Incline dumbbell press', '4 × 10', 'Upper chest — what fills a sherwani'),
-    ex('Wide-grip lat pulldown', '4 × 12', 'Width'),
-    ex('Chest-supported row', '3 × 12', 'Thickness'),
-    ex('Lateral raise', '4 × 15', 'Light, slow, high reps'),
-    ex('EZ-bar curl', '4 × 10', ''),
-    ex('Skull crusher or dips', '4 × 10', 'Triceps are two-thirds of the arm'),
-    ex('Face pull', '3 × 15', 'Posture, and it protects your shoulders'),
+    ex('Leg curl', '3 × 12', 'Missing from your routine. RDL trains hamstrings at the hip, this trains them at the knee — you need both', 'new'),
+    ex('Seated calf raises', '4 × 15', ''),
+    ex('Hanging leg raise', '3 × 12', 'Core work that does not thicken the waist', 'new'),
   ]},
 
-  /* --- Home / travel (blocks 2 & 4) --- */
-  M_HOME: { title: 'Home Full Body', kind: 'strength', items: [
-    ex('Goblet squat', '3 × 12', 'Light weight, 3-second lower, pause at the bottom'),
-    ex('Dumbbell RDL', '3 × 12', ''),
-    ex('Single-leg glute bridge', '3 × 12 / side', ''),
-    ex('Band pull-apart + dumbbell row', '3 × 15 / 3 × 12', ''),
+  V_UA: { title: 'Upper A', focus: 'Push & pull strength', kind: 'strength', items: [
+    ex('Flat dumbbell press', '4 × 6', 'Heavy day. Spotter or safety bars'),
+    ex('Barbell rowing', '4 × 8', 'Torso around 45°. Your best thickness builder'),
+    ex('Pull-ups', '4 × 6', 'Add weight once you are past 8 clean reps'),
+    ex('Seated machine press', '3 × 10', ''),
+    ex('Face pulls', '3 × 15', 'The biggest hole in your routine. You press and do lateral raises but never train rear delts — that costs you posture, shoulder health, and the wide look from behind', 'new'),
+    ex('Skull crusher', '3 × 10', ''),
+  ]},
+
+  V_LB: { title: 'Lower B', focus: 'Hinge & volume', kind: 'strength', items: [
+    ex('Deadlift', '3 × 5', 'Start around 80–90 kg, not 140'),
+    ex('Lunges', '3 × 10 / leg', 'Walking'),
+    ex('Leg extension', '3 × 12', ''),
+    ex('Lower back extension', '3 × 12', ''),
+    ex('Standing calf raise', '4 × 15', 'You only do seated. Seated hits soleus, standing hits the gastrocnemius — the one you can actually see', 'new'),
+    ex('Cable crunch', '3 × 15', ''),
+  ]},
+
+  V_UB: { title: 'Upper B', focus: 'Arms & back width', kind: 'strength', items: [
+    ex('Incline dumbbell press', '4 × 10', 'Upper chest — what fills a sherwani'),
+    ex('Cable pull-downs', '4 × 12', 'Wide grip. Width'),
+    ex('Cable rowing', '3 × 12', 'Thickness'),
+    ex('Lateral raises', '4 × 15', 'Light, slow, high reps'),
+    ex('Rear delt fly', '3 × 15', 'Second rear-delt dose of the week', 'new'),
+    ex('Incline dumbbell curls + cable curls', '3 × 10 / 3 × 12', 'Two bicep exercises here, not four. You had four — spreading them across the week beats stacking them'),
+    ex('Cable tricep push-down + dumbbell overhead extension', '3 × 12 each', ''),
+  ]},
+
+  /* ===== Home / travel — Udaipur (blocks 2 & 4) ===== */
+
+  M_HOME: { title: 'Home Full Body', focus: 'Dumbbells & band', kind: 'strength', items: [
+    ex('Goblet squat', '3 × 12', 'Light weight, three-second lower, pause at the bottom'),
+    ex('Dumbbell Romanian deadlift', '3 × 12', ''),
+    ex('Single-leg glute bridge', '3 × 12 / side', 'Your hip thrust substitute when there is no bench'),
+    ex('Dumbbell row', '3 × 12', ''),
     ex('Dumbbell floor press or push-up', '3 × 10', ''),
     ex('Banded lateral walk', '3 × 15 steps each way', ''),
-    ex('Plank + side plank', '2 rounds', ''),
+    ex('Bridge pulse + reverse crunches', '3 × 20 each', ''),
   ]},
-  V_HOME_L: { title: 'Home Lower', kind: 'strength', items: [
-    ex('Barbell squat', '4 × 8', 'Higher reps to make 70 kg count'),
+
+  V_HOME_L: { title: 'Home Lower', focus: '70 kg, higher reps', kind: 'strength', items: [
+    ex('Barbell squat', '4 × 8', 'Higher reps to make a lighter bar count'),
     ex('Romanian deadlift', '4 × 10', ''),
-    ex('Bulgarian split squat', '3 × 12 / leg', ''),
+    ex('Lunges', '3 × 12 / leg', ''),
     ex('Single-leg calf raise', '3 × 20', ''),
+    ex('Lower back extension', '3 × 15', ''),
   ]},
-  V_HOME_U: { title: 'Home Upper', kind: 'strength', items: [
-    ex('Barbell or dumbbell press', '4 × 8', ''),
-    ex('Barbell row', '4 × 10', ''),
-    ex('Overhead press', '3 × 10', ''),
-    ex('Curl and extension', '3 × 15 each', ''),
+
+  V_HOME_U: { title: 'Home Upper', focus: 'Dumbbells & bar', kind: 'strength', items: [
+    ex('Dumbbell press', '4 × 8', 'Flat or floor'),
+    ex('Barbell rowing', '4 × 10', ''),
+    ex('Dumbbell shoulder press', '3 × 10', ''),
+    ex('Band face pulls', '3 × 15', 'Pack the band for this one'),
+    ex('Dumbbell curls + skull crusher', '3 × 12 each', ''),
     ex('Push-ups to finish', '2 × max', ''),
   ]},
 
-  /* --- Swim & recovery --- */
-  SWIM_1: { title: 'Swim — breathing & float', kind: 'swim', items: [
-    ex('Kickboard lengths', '10 min', 'Face in, exhale through the nose the whole time'),
+  /* ===== Swim & recovery ===== */
+
+  SWIM_1: { title: 'Swim', focus: 'Breathing & float', kind: 'swim', items: [
+    ex('Kickboard lengths', '10 min', 'Face in the water, exhaling through the nose the whole time'),
     ex('Bobbing', '10 min', 'Exhale fully under, inhale at the surface. Until it is boring'),
     ex('Single-arm freestyle', '10 min', 'Other hand on the board'),
   ]},
-  SWIM_2: { title: 'Swim — putting it together', kind: 'swim', items: [
+  SWIM_2: { title: 'Swim', focus: 'Putting it together', kind: 'swim', items: [
     ex('Easy warm-up', '5 min', ''),
     ex('15 m freestyle repeats', '8 × 15 m', '30 s rest. Clean technique beats distance'),
     ex('Kick and drill', '10 min', ''),
     ex('Unbroken attempt', '1 × 25 m', ''),
   ]},
-  SWIM_3: { title: 'Swim — distance', kind: 'swim', items: [
+  SWIM_3: { title: 'Swim', focus: 'Distance', kind: 'swim', items: [
     ex('Easy warm-up', '5 min', ''),
-    ex('Unbroken swims', '4 × 25 m', 'Build toward 50 m unbroken'),
+    ex('Unbroken swims', '4 × 25 m', 'Building toward 50 m unbroken'),
     ex('Drill work', '10 min', ''),
   ]},
-  /* optional: true — counts as a bonus when done, never as a miss when skipped */
-  ACTIVE: { title: 'Active recovery', kind: 'active', optional: true, items: [
+
+  ACTIVE: { title: 'Active recovery', focus: 'Optional', kind: 'active', optional: true, items: [
     ex('Badminton, cycling, or a hike', '45–60 min', 'It counts. It is meant to be enjoyable'),
   ]},
-  MOBILITY: { title: 'Mobility', kind: 'active', optional: true, items: [
-    ex('Hips, shoulders, ankles', '10–15 min', 'Easy. After the swim'),
+  MOBILITY: { title: 'Mobility', focus: 'Optional', kind: 'active', optional: true, items: [
+    ex('Hips, shoulders, ankles', '10–15 min', 'Easy'),
   ]},
-  REST: { title: 'Rest', kind: 'rest', items: [] },
-  MVS: { title: 'Minimum viable session — 20 min', kind: 'strength', items: [
-    ex('Squat (goblet or bodyweight)', '3 × 15', ''),
+  REST: { title: 'Rest', focus: '', kind: 'rest', items: [] },
+
+  MVS: { title: 'Minimum viable session', focus: '20 minutes', kind: 'strength', items: [
+    ex('Squat — goblet or bodyweight', '3 × 15', ''),
     ex('Push-up at any height', '3 × 10', ''),
-    ex('Hip hinge / RDL with anything heavy', '3 × 12', ''),
+    ex('Hip hinge with anything heavy', '3 × 12', ''),
     ex('Row — dumbbell, band, or a heavy bag', '3 × 15', ''),
     ex('Plank', '3 × 45 s', ''),
     ex('Walking lunge', '3 × 10 / leg', ''),
@@ -174,16 +225,14 @@ function sessionIdFor(profile, week, dow) {
     if (dow === 1) return 'M_A';
     if (dow === 3) return 'M_B';
     if (dow === 5) return 'M_C';
-    if (dow === 2) return swimFor(week);
-    if (dow === 4) return swimFor(week);
-    // Block 3 adds a fourth strength day, rotating A → B → C
-    if (dow === 6) return block === 3 ? ['M_A', 'M_B', 'M_C'][(week - 11) % 3] : 'ACTIVE';
+    if (dow === 2 || dow === 4) return swimFor(week);
+    // Block 3 adds a fourth strength day
+    if (dow === 6) return block === 3 ? 'M_D' : 'ACTIVE';
     return 'REST';
   }
 
   // vaibhav
   if (home) {
-    // Alternates week to week: L-U-L, then U-L-U
     const odd = week % 2 === 1;
     if (dow === 1 || dow === 5) return odd ? 'V_HOME_L' : 'V_HOME_U';
     if (dow === 3) return odd ? 'V_HOME_U' : 'V_HOME_L';
@@ -194,8 +243,7 @@ function sessionIdFor(profile, week, dow) {
   if (dow === 3) return 'V_UA';
   if (dow === 5) return 'V_LB';
   if (dow === 6) return 'V_UB';
-  if (dow === 2) return swimFor(week);
-  if (dow === 4) return swimFor(week);
+  if (dow === 2 || dow === 4) return swimFor(week);
   return 'REST';
 }
 
@@ -205,7 +253,6 @@ function swimFor(week) {
   return 'SWIM_3';
 }
 
-/* Milestones keyed by week number */
 const MILESTONES = {
   1: 'Book both doctors. Take tape measurements and photos. Review supplement doses.',
   4: 'October blood panel — before Udaipur. Add-on list is in your notes.',

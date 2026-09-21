@@ -3,24 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#12100f">
-<title>Mahak & Vaibhav — 2 Feb 2027</title>
+<meta name="theme-color" content="#05060a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mahak &amp; Vaibhav — 2 Feb 2027</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="wrap">
   <header>
-    <div class="title">Wedding Prep</div>
-    <div class="countdown"><b id="days">—</b><span id="dayslabel">days to 2 February</span></div>
-    <div class="blockbar" id="blockbar"></div>
-    <div class="blockmeta">
-      <span id="weeklabel">—</span>
-      <span id="blocklabel">—</span>
+    <div class="hero-top">
+      <span class="brand">Wedding Prep</span>
+      <span class="chip" id="weekChip">—</span>
     </div>
+
+    <div class="hero-main">
+      <div class="ringwrap">
+        <svg class="ring" viewBox="0 0 104 104">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--a1)"/>
+              <stop offset="100%" stop-color="var(--a2)"/>
+            </linearGradient>
+          </defs>
+          <circle class="bg" cx="52" cy="52" r="46"/>
+          <circle class="fg" id="ringFg" cx="52" cy="52" r="46"/>
+        </svg>
+        <div class="ring-num"><b id="days">—</b><small id="daysUnit">days</small></div>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-date">2 February 2027</div>
+        <div class="hero-block" id="blockLabel">—</div>
+        <div class="hero-where" id="whereLabel">—</div>
+      </div>
+    </div>
+
+    <div class="blockbar" id="blockbar"></div>
   </header>
 
-  <div class="who" id="who">
+  <div class="seg" id="who">
+    <div class="seg-pill" id="segPill" data-i="0"></div>
     <button data-who="mahak">Mahak</button>
     <button data-who="vaibhav">Vaibhav</button>
   </div>
@@ -29,24 +52,25 @@
   <section class="view" data-view="today">
     <div id="alerts"></div>
     <div class="card">
-      <h2 id="sessionTitle">—</h2>
+      <div class="sess-head">
+        <h2 id="sessionTitle">—</h2>
+        <span class="sess-focus" id="sessionFocus" hidden></span>
+      </div>
       <p class="sub" id="sessionDate">—</p>
+      <div id="warmup"></div>
       <div id="exercises"></div>
-      <div class="row" style="margin-top:14px">
-        <button class="btn primary" id="completeBtn">Mark session complete</button>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn ghost" id="mvsBtn">Bad day? Do the 20-minute version</button>
-      </div>
+      <div id="cooldown"></div>
+      <div class="row"><button class="btn primary" id="completeBtn">Mark session complete</button></div>
+      <div class="row"><button class="btn ghost" id="mvsBtn">Bad day? Swap in the 20-minute version</button></div>
     </div>
     <div class="card">
       <h2>This week</h2>
       <p class="sub">Never miss twice in the same week.</p>
       <div class="week" id="weekdots"></div>
-      <div class="stats" style="margin-top:14px">
+      <div class="stats">
         <div class="stat"><b id="statStreak">0</b><span>Streak</span></div>
         <div class="stat"><b id="statWeek">0/0</b><span>This week</span></div>
-        <div class="stat"><b id="statTotal">0</b><span>Total done</span></div>
+        <div class="stat"><b id="statTotal">0</b><span>Total</span></div>
       </div>
     </div>
   </section>
@@ -56,9 +80,11 @@
     <div class="card">
       <h2>Log today's numbers</h2>
       <p class="sub">Morning, after the bathroom, before food. Tape every two weeks.</p>
-      <label class="f"><span>Weight (kg)</span><input class="f" type="number" step="0.1" id="mWeight" inputmode="decimal"></label>
+      <h3>Weight</h3>
+      <label class="f"><span>Kilograms</span><input class="f" type="number" step="0.1" id="mWeight" inputmode="decimal" placeholder="—"></label>
+      <h3>Tape — centimetres</h3>
       <div class="grid2" id="tapeInputs"></div>
-      <button class="btn primary full" style="margin-top:12px" id="saveMetrics">Save</button>
+      <div class="row"><button class="btn primary" id="saveMetrics">Save</button></div>
     </div>
     <div class="card">
       <h2>Weight</h2>
@@ -83,14 +109,16 @@
       <p class="sub" id="checkinWeek">—</p>
       <h3>Sessions</h3>
       <p class="sub" id="checkinSessions">—</p>
-      <label class="f"><span>Average lights-out this week</span><input class="f" type="time" id="cBedtime"></label>
-      <label class="f"><span>Average sleep (hours)</span><input class="f" type="number" step="0.5" id="cSleep" inputmode="decimal"></label>
-      <label class="f"><span>How did the week feel? One sentence.</span><textarea class="f" id="cNote"></textarea></label>
-      <button class="btn primary full" id="saveCheckin">Save check-in</button>
+      <h3>Sleep</h3>
+      <label class="f"><span>Average lights-out</span><input class="f" type="time" id="cBedtime"></label>
+      <label class="f"><span>Average hours slept</span><input class="f" type="number" step="0.5" id="cSleep" inputmode="decimal" placeholder="—"></label>
+      <h3>Notes</h3>
+      <label class="f"><span>How did the week feel?</span><textarea class="f" id="cNote" placeholder="One sentence is enough."></textarea></label>
+      <div class="row"><button class="btn primary" id="saveCheckin">Save check-in</button></div>
     </div>
     <div class="card">
-      <h2>Bedtime target</h2>
-      <p class="sub">Lights out 11:30 pm by week 5. Twenty minutes earlier each week — abrupt changes don't stick.</p>
+      <h2>Bedtime</h2>
+      <p class="sub">Target: lights out 11:30 pm by week 5. Twenty minutes earlier each week.</p>
       <div id="bedChart"></div>
     </div>
     <div class="card">
@@ -111,8 +139,8 @@
     </div>
     <div class="card">
       <h2>Data</h2>
-      <p class="sub">Everything is stored on this device. Export to move it to another phone, or to back it up.</p>
-      <div class="row" style="margin-top:12px">
+      <p class="sub">Stored on this device only. Export to move it to another phone — importing merges rather than overwrites.</p>
+      <div class="row">
         <button class="btn" id="exportBtn">Export</button>
         <button class="btn" id="importBtn">Import</button>
       </div>
@@ -122,10 +150,10 @@
 </div>
 
 <nav id="nav">
-  <button data-nav="today"><b>◆</b>Today</button>
-  <button data-nav="body"><b>◇</b>Body</button>
-  <button data-nav="checkin"><b>◈</b>Check-in</button>
-  <button data-nav="plan"><b>◉</b>Plan</button>
+  <button data-nav="today">Today</button>
+  <button data-nav="body">Body</button>
+  <button data-nav="checkin">Check-in</button>
+  <button data-nav="plan">Plan</button>
 </nav>
 
 <script src="program.js"></script>
