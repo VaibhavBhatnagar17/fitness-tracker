@@ -15,7 +15,10 @@
   <header>
     <div class="hero-top">
       <span class="brand">Wedding Prep</span>
-      <span class="chip" id="weekChip">—</span>
+      <span class="hero-right">
+        <button class="syncdot" id="syncDot" data-s="off"></button>
+        <span class="chip" id="weekChip">—</span>
+      </span>
     </div>
 
     <div class="hero-main">
@@ -157,6 +160,10 @@
 
   <!-- PLAN -->
   <section class="view" data-view="plan">
+    <div class="card" id="syncCard">
+      <h2>Sync across devices</h2>
+      <div id="syncBody"></div>
+    </div>
     <div class="card">
       <h2>The four blocks</h2>
       <div id="blockList"></div>
@@ -166,8 +173,8 @@
       <div id="milestoneList"></div>
     </div>
     <div class="card">
-      <h2>Data</h2>
-      <p class="sub">Stored on this device only. Export to move it to another phone — importing merges rather than overwrites.</p>
+      <h2>Backup</h2>
+      <p class="sub">A copy of everything as a file. Importing merges rather than overwrites.</p>
       <div class="row">
         <button class="btn" id="exportBtn">Export</button>
         <button class="btn" id="importBtn">Import</button>

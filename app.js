@@ -70,10 +70,34 @@ function load() {
   return { profiles: { mahak: blank(), vaibhav: blank() } };
 }
 /* Wrapped: browsers block localStorage when a page is opened directly as a file:// URL */
-const save = () => {
+const store = () => {
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) { console.warn('Could not save — serve this over http rather than opening the file directly.'); }
 };
+const save = () => { store(); schedulePush(); };
+
+/* Records carry u = last-edited time so two devices can be merged; deleted activities stay as tombstones. */
+function mergeState(base, other) {
+  let changed = false;
+  for (const p of Object.keys(PROFILES)) {
+    if (!other.profiles || !other.profiles[p]) continue;
+    const a = base.profiles[p], b = upgrade(p, other.profiles[p]);
+    for (const [d, day] of Object.entries(b.days)) {
+      const tgt = a.days[d] || (a.days[d] = { acts: [] });
+      for (const x of day.acts) {
+        const i = tgt.acts.findIndex(y => y.id === x.id);
+        if (i < 0) { tgt.acts.push(x); changed = true; }
+        else if ((x.u || 0) > (tgt.acts[i].u || 0)) { tgt.acts[i] = x; changed = true; }
+      }
+    }
+    for (const k of ['metrics', 'checkins']) {
+      for (const [d, v] of Object.entries(b[k])) {
+        if (!a[k][d] || (v.u || 0) > (a[k][d].u || 0)) { a[k][d] = v; changed = true; }
+      }
+    }
+  }
+  return changed;
+}
 
 let state = load();
 let who = localStorage.getItem(KEY + '_who') || 'mahak';
@@ -84,7 +108,7 @@ let openId = null;     // expanded activity; null = pick automatically, '' = all
 let progEx = null;     // exercise selected on Progress
 
 const me = () => state.profiles[who];
-const acts = (p, d) => (state.profiles[p].days[d] || {}).acts || [];
+const acts = (p, d) => ((state.profiles[p].days[d] || {}).acts || []).filter(a => !a.deleted);
 const dayDone = (p, d) => acts(p, d).some(a => a.done);
 const findAct = id => acts(who, cur).find(a => a.id === id);
 
@@ -93,9 +117,9 @@ function addAct(act) {
   day.acts.push(act);
 }
 function removeAct(id) {
-  const day = me().days[cur]; if (!day) return;
-  day.acts = day.acts.filter(a => a.id !== id);
-  if (!day.acts.length) delete me().days[cur];
+  const a = findAct(id); if (!a) return;
+  for (const k of Object.keys(a)) if (k !== 'id') delete a[k];
+  Object.assign(a, { deleted: true, u: Date.now() });
 }
 
 /* When nothing strength is scheduled, suggest the session gone longest without. */
@@ -114,7 +138,7 @@ function suggestSession(p, d) {
 }
 
 function newAct(type) {
-  const a = { id: uid(), type, done: false };
+  const a = { id: uid(), type, done: false, u: Date.now() };
   if (type === 'gym') {
     a.mode = 'plan';
     a.sessionId = suggestSession(who, cur);
@@ -206,8 +230,8 @@ function actSummary(a) {
 
 const bestUnbroken = p => {
   let b = 0;
-  for (const day of Object.values(state.profiles[p].days)) {
-    for (const a of day.acts) if (a.type === 'swim') b = Math.max(b, +a.unbroken || 0);
+  for (const d of Object.keys(state.profiles[p].days)) {
+    for (const a of acts(p, d)) if (a.type === 'swim') b = Math.max(b, +a.unbroken || 0);
   }
   return b;
 };
@@ -300,6 +324,9 @@ function renderToday() {
   const alerts = [];
   if (who === 'mahak' && (planned.def.kind !== 'rest' || day.length)) {
     alerts.push(`<div class="banner alert">Eat before you train — never fasted. Medication at its usual time, regardless of what the schedule says.</div>`);
+  }
+  if (!sync) {
+    alerts.push(`<div class="banner note"><span class="tag">This device only</span>Your logs aren't syncing, so other phones won't see them. <button class="link" data-goto-sync>Set up sync</button></div>`);
   }
   if (cur === TODAY && MILESTONES[w]) {
     alerts.push(`<div class="banner note"><span class="tag">Week ${w}</span>${MILESTONES[w]}</div>`);
@@ -490,10 +517,10 @@ function renderProgress() {
   const b = blockForWeek(clampWeek(weekOf(TODAY)));
   const from = addDays(PROGRAM_START, (b.weeks[0] - 1) * 7), to = addDays(PROGRAM_START, b.weeks[1] * 7 - 1);
   let gym = 0, swim = 0, mins = 0, sets = 0, vol = 0, active = 0;
-  for (const [d, day] of Object.entries(me().days)) {
+  for (const d of Object.keys(me().days)) {
     if (d < from || d > to) continue;
-    if (day.acts.some(a => a.done)) active++;
-    for (const a of day.acts) {
+    if (dayDone(who, d)) active++;
+    for (const a of acts(who, d)) {
       if (!a.done) continue;
       if (a.type === 'gym') {
         gym++;
@@ -589,7 +616,8 @@ function renderBody() {
     `<label class="f"><span>${t.label}</span><input class="f" type="number" step="0.1" inputmode="decimal" data-tape="${t.key}" value="${m[t.key] ?? ''}" placeholder="—"></label>`
   ).join('');
 
-  const entries = Object.entries(me().metrics).sort(([a], [b]) => a < b ? -1 : 1);
+  const entries = Object.entries(me().metrics).filter(([, v]) => Object.keys(v).some(k => k !== 'u'))
+    .sort(([a], [b]) => a < b ? -1 : 1);
   const weights = entries.filter(([, v]) => v.weight != null).map(([d, v]) => ({ x: d, y: +v.weight }));
 
   const sub = document.getElementById('weightSub');
@@ -721,6 +749,7 @@ function render() {
   document.querySelectorAll('nav button').forEach(b => b.dataset.active = (b.dataset.nav === view));
   document.querySelectorAll('.view').forEach(v => v.dataset.active = (v.dataset.view === view));
   ({ today: renderToday, progress: renderProgress, body: renderBody, checkin: renderCheckin, plan: renderPlan })[view]();
+  renderSync();
 }
 
 function toast(msg) {
@@ -841,6 +870,7 @@ host.addEventListener('click', ev => {
     removeAct(a.id);
     openId = '';
   }
+  a.u = Date.now();
   save(); renderToday();
 });
 
@@ -858,6 +888,7 @@ host.addEventListener('change', ev => {
     }
     a.exercises.push({ name, sets: [newSet(), newSet(), newSet()] });
   } else return;
+  a.u = Date.now();
   save(); renderToday();
 });
 
@@ -867,6 +898,7 @@ host.addEventListener('input', ev => {
   if (el.dataset.f && e) e.sets[j][el.dataset.f] = el.value;
   else if (el.dataset.af) a[el.dataset.af] = el.value;
   else return;
+  a.u = Date.now();
   save();
 });
 
@@ -878,7 +910,7 @@ document.getElementById('saveMetrics').addEventListener('click', () => {
   document.querySelectorAll('[data-tape]').forEach(i => {
     if (i.value !== '') entry[i.dataset.tape] = +i.value; else delete entry[i.dataset.tape];
   });
-  if (!Object.keys(entry).length) delete me().metrics[TODAY];
+  entry.u = Date.now();
   save(); renderBody(); flash('saveMetrics', 'Saved', 'Save');
 });
 
@@ -890,6 +922,7 @@ document.getElementById('saveCheckin').addEventListener('click', () => {
     sleep: sleep === '' ? null : +sleep,
     note: document.getElementById('cNote').value,
     sessions: weekStats(who, TODAY).done,
+    u: Date.now(),
   };
   save(); renderCheckin(); flash('saveCheckin', 'Saved', 'Save check-in');
 });
@@ -897,6 +930,193 @@ document.getElementById('saveCheckin').addEventListener('click', () => {
 function flash(id, on, off) {
   const b = document.getElementById(id);
   b.textContent = on; setTimeout(() => (b.textContent = off), 1400);
+}
+
+/* ---------- sync: a secret gist on your GitHub account ---------- */
+const SYNC_KEY = KEY + '_sync';
+const GIST_FILE = 'wedprep-data.json';
+let sync = null;
+try { sync = JSON.parse(localStorage.getItem(SYNC_KEY)); } catch (e) { /* not connected */ }
+let syncStatus = sync ? 'idle' : 'off';   // off | idle | busy | error
+let syncError = '';
+let syncing = false, syncAgain = false, pushTimer = null;
+
+async function gh(path, opts = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    ...opts,
+    cache: 'no-store',
+    headers: {
+      Authorization: `Bearer ${sync.token}`,
+      Accept: 'application/vnd.github+json',
+      ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+  });
+  if (res.status === 401) throw new Error('GitHub rejected the token — it may have expired or been deleted.');
+  if (res.status === 404) throw new Error('The sync gist was not found — it may have been deleted.');
+  if (!res.ok) throw new Error(`GitHub returned an error (${res.status}). Try again in a minute.`);
+  return res.json();
+}
+
+async function readRemote() {
+  const g = await gh(`/gists/${sync.gistId}`);
+  const f = g.files[GIST_FILE];
+  if (!f) return null;
+  const text = f.truncated ? await (await fetch(f.raw_url, { cache: 'no-store' })).text() : f.content;
+  return { text, data: JSON.parse(text) };
+}
+
+/* Pull, merge, and push back only if the merged result differs from what is stored */
+async function syncNow() {
+  if (!sync) return;
+  if (syncing) { syncAgain = true; return; }
+  syncing = true;
+  setSync('busy');
+  try {
+    const remote = await readRemote();
+    const changed = remote ? mergeState(state, remote.data) : false;
+    const out = JSON.stringify(state);
+    if (!remote || remote.text !== out) {
+      await gh(`/gists/${sync.gistId}`, { method: 'PATCH', body: JSON.stringify({ files: { [GIST_FILE]: { content: out } } }) });
+    }
+    store();
+    sync.last = Date.now();
+    localStorage.setItem(SYNC_KEY, JSON.stringify(sync));
+    syncError = '';
+    setSync('idle');
+    if (changed) safeRender();
+  } catch (e) {
+    syncError = e.message || 'No connection.';
+    setSync('error');
+  } finally {
+    syncing = false;
+    if (syncAgain) { syncAgain = false; syncNow(); }
+  }
+}
+
+function schedulePush() {
+  if (!sync) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(syncNow, 1200);
+}
+
+/* Don't redraw under someone mid-typing; the next render picks the merge up */
+function safeRender() {
+  const f = document.activeElement;
+  if (f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) return;
+  render();
+}
+
+async function connect(token) {
+  sync = { token: token.trim(), gistId: null };
+  syncError = '';
+  setSync('busy');
+  try {
+    const list = await gh('/gists?per_page=100');
+    const found = list.find(g => g.files && g.files[GIST_FILE]);
+    if (found) sync.gistId = found.id;
+    else {
+      const g = await gh('/gists', { method: 'POST', body: JSON.stringify({
+        description: 'Wedding prep tracker — data', public: false,
+        files: { [GIST_FILE]: { content: JSON.stringify(state) } },
+      }) });
+      sync.gistId = g.id;
+    }
+    localStorage.setItem(SYNC_KEY, JSON.stringify(sync));
+    await syncNow();
+    toast(found ? 'Connected — pulled in your data from the other devices.' : 'Connected — this device is now the sync source.');
+  } catch (e) {
+    sync = null;
+    localStorage.removeItem(SYNC_KEY);
+    syncError = e.message || 'Could not reach GitHub.';
+    setSync('off');
+  }
+  render();
+}
+
+function disconnect() {
+  if (!confirm('Stop syncing on this device? Your data stays here, and on the other devices.')) return;
+  sync = null;
+  localStorage.removeItem(SYNC_KEY);
+  setSync('off');
+  render();
+}
+
+const shareLink = () => `${location.origin}${location.pathname}#sync=${encodeURIComponent(sync.token)}`;
+
+function setSync(s) { syncStatus = s; renderSync(); }
+
+function renderSync() {
+  const dot = document.getElementById('syncDot');
+  const label = { off: 'Not synced', idle: 'Synced', busy: 'Syncing', error: 'Sync paused' }[syncStatus];
+  dot.dataset.s = syncStatus;
+  dot.innerHTML = `<i></i>${label}`;
+
+  const body = document.getElementById('syncBody');
+  if (!body || view !== 'plan') return;
+  const err = syncError ? `<div class="banner alert">${esc(syncError)}</div>` : '';
+  if (!sync) {
+    if (body.dataset.mode === 'off' && !syncError) return;   // keep a half-typed token
+    body.dataset.mode = 'off';
+    body.innerHTML = `<p class="sub">Right now your logs live only on this device. Connect once and every phone and laptop shows the same data, updating on its own.</p>
+      <ol class="steps">
+        <li>On a device signed in to GitHub, <a href="https://github.com/settings/tokens/new?scopes=gist&description=Wedding%20prep%20tracker" target="_blank" rel="noopener">open this page</a>.</li>
+        <li>Set <b>Expiration</b> to a custom date after the wedding — say 28 Feb 2027. Leave only <b>gist</b> ticked. Press <b>Generate token</b>.</li>
+        <li>Copy the token (it starts with <code>ghp_</code>) and paste it here.</li>
+      </ol>
+      ${err}
+      <label class="f"><span>GitHub token</span><input class="f" id="syncToken" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_…"></label>
+      <button class="btn primary full" data-sync="connect">Connect</button>
+      <p class="sub small">Do this once, on one device. It then gives you a link that connects the others in one tap.</p>`;
+    return;
+  }
+  body.dataset.mode = 'on';
+  const when = sync.last ? new Date(sync.last).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '—';
+  body.innerHTML = `<div class="sync-state" data-s="${syncStatus}"><i></i>${syncStatus === 'busy' ? 'Syncing…' : syncStatus === 'error' ? 'Sync paused — will retry' : `Synced · last at ${when}`}</div>
+    ${err}
+    <p class="sub">Your data is kept in a secret gist on your GitHub account. Changes on any connected device show up on the others within a few seconds of opening the page.</p>
+    <h3>Connect another phone or laptop</h3>
+    <p class="sub">Copy this link and open it on the other device. It connects that device straight away.</p>
+    <div class="row"><button class="btn primary" data-sync="link">Copy link</button><button class="btn" data-sync="now">Sync now</button></div>
+    <p class="sub small">Anyone with the link can read and change the tracker. Send it only to yourselves, then delete the message.</p>
+    <div class="row"><button class="btn ghost" data-sync="off">Disconnect this device</button></div>`;
+}
+
+document.getElementById('syncBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sync]'); if (!b) return;
+  const act = b.dataset.sync;
+  if (act === 'connect') {
+    const t = document.getElementById('syncToken').value.trim();
+    if (!t) { document.getElementById('syncToken').focus(); return; }
+    b.textContent = 'Connecting…'; b.disabled = true;
+    await connect(t);
+  } else if (act === 'now') syncNow();
+  else if (act === 'off') disconnect();
+  else if (act === 'link') {
+    const link = shareLink();
+    try { await navigator.clipboard.writeText(link); toast('Link copied. Open it on the other device.'); }
+    catch (err) { prompt('Copy this link and open it on the other device:', link); }
+  }
+});
+
+document.getElementById('alerts').addEventListener('click', e => {
+  if (!e.target.closest('[data-goto-sync]')) return;
+  goTo('plan');
+  setTimeout(() => document.getElementById('syncCard').scrollIntoView({ behavior: 'smooth' }), 60);
+});
+document.getElementById('syncDot').addEventListener('click', () => {
+  goTo('plan');
+  setTimeout(() => document.getElementById('syncCard').scrollIntoView({ behavior: 'smooth' }), 60);
+});
+
+function startSync() {
+  const m = location.hash.match(/^#sync=(.+)$/);
+  if (m) {
+    history.replaceState(null, '', location.pathname + '#today');
+    connect(decodeURIComponent(m[1]));
+  } else if (sync) syncNow();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
+  window.addEventListener('online', () => syncNow());
+  setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 60000);
 }
 
 /* ---------- events: export / import ---------- */
@@ -917,17 +1137,9 @@ document.getElementById('importFile').addEventListener('change', e => {
     try {
       const incoming = JSON.parse(r.result);
       if (!incoming.profiles) throw new Error('not a backup file');
-      for (const p of Object.keys(PROFILES)) {
-        const src = upgrade(p, incoming.profiles[p]), dst = state.profiles[p];
-        for (const [d, day] of Object.entries(src.days)) {
-          const tgt = dst.days[d] || (dst.days[d] = { acts: [] });
-          for (const a of day.acts) if (!tgt.acts.some(x => x.id === a.id)) tgt.acts.push(a);
-        }
-        Object.assign(dst.metrics, src.metrics);
-        Object.assign(dst.checkins, src.checkins);
-      }
+      mergeState(state, incoming);
       save(); render();
-      alert('Merged. Activities are added alongside yours; body and check-in entries with the same date are replaced.');
+      alert('Merged. Where both have the same entry, the more recently edited one is kept.');
     } catch (err) {
       alert("Couldn't read that file — it doesn't look like an export from here.");
     }
@@ -937,3 +1149,4 @@ document.getElementById('importFile').addEventListener('change', e => {
 });
 
 render();
+startSync();

@@ -495,3 +495,25 @@ nav button[data-active="true"] {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- sync ---------- */
+.hero-right { display: flex; align-items: center; gap: 8px; }
+.syncdot, .sync-state {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 600 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.syncdot { background: none; border: none; cursor: pointer; padding: 6px 2px; }
+.syncdot i, .sync-state i { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex: none; }
+[data-s="idle"] i { background: var(--good); box-shadow: 0 0 8px var(--good); }
+[data-s="busy"] i { background: var(--a1); animation: pulse 1s ease-in-out infinite; }
+[data-s="error"] i { background: var(--danger); }
+[data-s="off"] { color: var(--danger); }
+[data-s="off"] i { background: var(--danger); }
+@keyframes pulse { 50% { opacity: .3; } }
+.sync-state { font-size: 11px; margin: 10px 0 4px; color: var(--text); }
+ol.steps { margin: 12px 0 14px; padding-left: 20px; color: var(--muted); font-size: 14px; }
+ol.steps li { margin-bottom: 7px; }
+ol.steps a { color: var(--a1); }
+ol.steps b { color: var(--text); }
+code { font: 500 12.5px var(--mono); background: rgba(255, 255, 255, .06); padding: 1px 5px; border-radius: 5px; }
+.sub.small { font-size: 12px; color: var(--dim); margin-top: 10px; }
