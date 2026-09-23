@@ -50,28 +50,56 @@
 
   <!-- TODAY -->
   <section class="view" data-view="today">
+    <div class="daynav">
+      <button class="arrow" id="prevDay" aria-label="Previous day">‹</button>
+      <div class="daynav-mid">
+        <div class="day-t"><span id="dayTitle">Today</span><button class="link" id="backToday" hidden>Back to today</button></div>
+        <div class="day-d" id="dayDate">—</div>
+      </div>
+      <button class="arrow" id="nextDay" aria-label="Next day">›</button>
+    </div>
+    <div class="plan-line" id="dayPlan"></div>
     <div id="alerts"></div>
     <div class="card">
-      <div class="sess-head">
-        <h2 id="sessionTitle">—</h2>
-        <span class="sess-focus" id="sessionFocus" hidden></span>
-      </div>
-      <p class="sub" id="sessionDate">—</p>
-      <div id="warmup"></div>
-      <div id="exercises"></div>
-      <div id="cooldown"></div>
-      <div class="row"><button class="btn primary" id="completeBtn">Mark session complete</button></div>
-      <div class="row"><button class="btn ghost" id="mvsBtn">Bad day? Swap in the 20-minute version</button></div>
+      <h2>What are you doing?</h2>
+      <p class="sub" id="pickHint">—</p>
+      <div class="picks" id="actChips"></div>
     </div>
+    <div id="actList"></div>
     <div class="card">
       <h2>This week</h2>
-      <p class="sub">Never miss twice in the same week.</p>
+      <p class="sub">Never miss twice in the same week. Tap a day to log it late.</p>
       <div class="week" id="weekdots"></div>
       <div class="stats">
         <div class="stat"><b id="statStreak">0</b><span>Streak</span></div>
         <div class="stat"><b id="statWeek">0/0</b><span>This week</span></div>
         <div class="stat"><b id="statTotal">0</b><span>Total</span></div>
       </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="view" data-view="progress">
+    <div class="card">
+      <h2>This block</h2>
+      <p class="sub" id="progBlock">—</p>
+      <div class="stats" id="progStats"></div>
+    </div>
+    <div class="card">
+      <h2>Exercise progress</h2>
+      <p class="sub" id="progExSub">—</p>
+      <select class="f prog-sel" id="progEx"></select>
+      <div id="progChart"></div>
+      <div id="progTable"></div>
+    </div>
+    <div class="card">
+      <h2>Swimming</h2>
+      <p class="sub" id="swimSub">—</p>
+      <div id="swimChart"></div>
+    </div>
+    <div class="card">
+      <h2>Recent activity</h2>
+      <div id="feed"></div>
     </div>
   </section>
 
@@ -151,10 +179,13 @@
 
 <nav id="nav">
   <button data-nav="today">Today</button>
+  <button data-nav="progress">Progress</button>
   <button data-nav="body">Body</button>
   <button data-nav="checkin">Check-in</button>
   <button data-nav="plan">Plan</button>
 </nav>
+
+<div class="toast" id="toast" data-on="false"></div>
 
 <script src="program.js"></script>
 <script src="app.js"></script>
